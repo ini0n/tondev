@@ -12,17 +12,17 @@ jobs:
         include:
           - os: windows
             build: npx caxa --directory . --command "{{caxa}}/node_modules/.bin/node" "{{caxa}}/cli.js" --output "tondev-windows-${{ github.sha }}.exe"
-            artifact: tondev-windows-${{ github.sha }}.exe
+            artifact: tondev-windows-${{ steps.get-version.outputs.current }}.exe
           - os: macos
             build: |
               npx caxa --directory . --command "{{caxa}}/node_modules/.bin/node" "{{caxa}}/cli.js" --output "tondev"
               tar -czf "tondev-macos-${{ github.sha }}.tgz" "tondev"
-            artifact: tondev-macos-${{ github.sha }}.tgz
+            artifact: tondev-macos-${{ steps.get-version.outputs.current }}.tgz
           - os: ubuntu
             build: |
               npx caxa --directory . --command "{{caxa}}/node_modules/.bin/node" "{{caxa}}/cli.js" --output "tondev"
               tar -czf "tondev-linux-${{ github.sha }}.tgz" "tondev"
-            artifact: tondev-linux-${{ github.sha }}.tgz
+            artifact: tondev-linux-${{ steps.get-version.outputs.current }}.tgz
     runs-on: ${{ matrix.os }}-latest
     steps:
       - uses: actions/checkout@v2
@@ -30,6 +30,9 @@ jobs:
         with:
           node-version: 12
           registry-url: https://registry.npmjs.org/
+      - name: get-version
+        run: echo "::set-output name=current::$(jq -r '.version' package.json)"
+        id: get-version
       - run: |
           npm i
           npx tsc
